@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" id="htmlRoot">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BMI 計算器</title>
+  <title>BMI 計算器 / BMI Calculator</title>
   <style>
     :root {
       --bg: #f5f7fa;
@@ -16,7 +16,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "Noto Sans TC", "Helvetica Neue", Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
       display: flex;
@@ -33,8 +33,23 @@
       width: 100%;
       max-width: 420px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+      position: relative;
     }
-    h1 { margin: 0 0 6px; font-size: 1.6rem; }
+    .lang-toggle {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .lang-toggle:hover { background: var(--bg); }
+    h1 { margin: 0 0 6px; font-size: 1.6rem; padding-right: 80px; }
     p.desc { margin: 0 0 20px; color: var(--muted); font-size: 0.95rem; }
     .field { margin-bottom: 16px; }
     label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.95rem; }
@@ -49,7 +64,7 @@
     }
     input:focus { border-color: var(--primary); }
     .unit { color: var(--muted); font-size: 0.85rem; margin-left: 4px; }
-    button {
+    button.calc {
       width: 100%;
       padding: 12px;
       background: var(--primary);
@@ -61,7 +76,7 @@
       cursor: pointer;
       transition: opacity 0.15s;
     }
-    button:hover { opacity: 0.9; }
+    button.calc:hover { opacity: 0.9; }
     .result {
       margin-top: 24px;
       text-align: center;
@@ -74,7 +89,7 @@
       line-height: 1;
     }
     .bmi-label { margin-top: 8px; font-size: 1.1rem; font-weight: 600; }
-    .bmi-note { margin-top: 6px; color: var(--muted); font-size: 0.9rem; }
+    .bmi-note { margin-top: 6px; color: var(--muted); font-size: 0.85rem; }
     .error { color: #d33; margin-top: 12px; text-align: center; font-size: 0.9rem; display: none; }
     footer {
       margin-top: 24px;
@@ -86,69 +101,142 @@
 </head>
 <body>
   <main class="card">
-    <h1>BMI 計算器</h1>
-    <p class="desc">輸入身高與體重，計算身體質量指數 (BMI)。</p>
+    <button id="langToggle" class="lang-toggle" type="button">English</button>
+    <h1 id="title">BMI 計算器</h1>
+    <p class="desc" id="desc">輸入身高與體重，計算身體質量指數 (BMI)。</p>
 
     <div class="field">
-      <label for="height">身高 <span class="unit">(cm)</span></label>
+      <label for="height"><span id="heightLabel">身高</span> <span class="unit" id="heightUnit">(cm)</span></label>
       <input id="height" type="number" min="1" step="0.1" placeholder="例如：170" />
     </div>
     <div class="field">
-      <label for="weight">體重 <span class="unit">(kg)</span></label>
+      <label for="weight"><span id="weightLabel">體重</span> <span class="unit" id="weightUnit">(kg)</span></label>
       <input id="weight" type="number" min="1" step="0.1" placeholder="例如：65" />
     </div>
 
-    <button id="calc">計算 BMI</button>
+    <button id="calc" class="calc" type="button">計算 BMI</button>
     <div class="error" id="error">請輸入有效的大於 0 的數值。</div>
 
     <div class="result" id="result">
       <div class="bmi-value" id="bmiValue">--</div>
-      <div class="bmi-label" id="bmiLabel">--</div>
-      <div class="bmi-note">成人 BMI 參考：過輕 &lt; 18.5、正常 18.5–24、過重 24–27、肥胖 ≥ 27</div>
+      <div class="bmi-label" id="bmiCategory">--</div>
+      <div class="bmi-note" id="note">成人 BMI 參考：過輕 &lt; 18.5、正常 18.5–24、過重 24–27、肥胖 ≥ 27</div>
     </div>
 
-    <footer>BMI 小網頁 v1 · 中文版</footer>
+    <footer id="footer">BMI 小網頁 v2 · 中英雙語</footer>
   </main>
 
   <script>
     (function () {
-      const heightEl = document.getElementById('height');
-      const weightEl = document.getElementById('weight');
-      const btn = document.getElementById('calc');
-      const errorEl = document.getElementById('error');
-      const resultEl = document.getElementById('result');
-      const valueEl = document.getElementById('bmiValue');
-      const labelEl = document.getElementById('bmiLabel');
+      const i18n = {
+        zh: {
+          title: 'BMI 計算器',
+          desc: '輸入身高與體重，計算身體質量指數 (BMI)。',
+          heightLabel: '身高',
+          heightUnit: '(cm)',
+          weightLabel: '體重',
+          weightUnit: '(kg)',
+          heightPlaceholder: '例如：170',
+          weightPlaceholder: '例如：65',
+          calc: '計算 BMI',
+          error: '請輸入有效的大於 0 的數值。',
+          categories: { under: '過輕', normal: '正常', over: '過重', obese: '肥胖' },
+          note: '成人 BMI 參考：過輕 < 18.5、正常 18.5–24、過重 24–27、肥胖 ≥ 27',
+          footer: 'BMI 小網頁 v2 · 中英雙語',
+          toggle: 'English'
+        },
+        en: {
+          title: 'BMI Calculator',
+          desc: 'Enter your height and weight to calculate your Body Mass Index (BMI).',
+          heightLabel: 'Height',
+          heightUnit: '(cm)',
+          weightLabel: 'Weight',
+          weightUnit: '(kg)',
+          heightPlaceholder: 'e.g. 170',
+          weightPlaceholder: 'e.g. 65',
+          calc: 'Calculate BMI',
+          error: 'Please enter valid numbers greater than 0.',
+          categories: { under: 'Underweight', normal: 'Normal', over: 'Overweight', obese: 'Obese' },
+          note: 'Adult BMI reference: Underweight < 18.5, Normal 18.5–24, Overweight 24–27, Obese ≥ 27',
+          footer: 'BMI Web App v2 · Bilingual',
+          toggle: '中文'
+        }
+      };
+
+      let lang = 'zh';
+      try {
+        const saved = localStorage.getItem('bmi-lang');
+        if (saved === 'zh' || saved === 'en') {
+          lang = saved;
+        } else if (navigator.language && navigator.language.toLowerCase().startsWith('en')) {
+          lang = 'en';
+        }
+      } catch (e) {}
+
+      let lastBmi = null;
+
+      const el = (id) => document.getElementById(id);
 
       function classify(bmi) {
-        if (bmi < 18.5) return '過輕';
-        if (bmi < 24) return '正常';
-        if (bmi < 27) return '過重';
-        return '肥胖';
+        const c = i18n[lang].categories;
+        if (bmi < 18.5) return c.under;
+        if (bmi < 24) return c.normal;
+        if (bmi < 27) return c.over;
+        return c.obese;
+      }
+
+      function applyTranslations() {
+        const t = i18n[lang];
+        el('htmlRoot').lang = lang === 'zh' ? 'zh-Hant' : 'en';
+        el('title').textContent = t.title;
+        el('desc').textContent = t.desc;
+        el('heightLabel').textContent = t.heightLabel;
+        el('heightUnit').textContent = t.heightUnit;
+        el('weightLabel').textContent = t.weightLabel;
+        el('weightUnit').textContent = t.weightUnit;
+        el('height').placeholder = t.heightPlaceholder;
+        el('weight').placeholder = t.weightPlaceholder;
+        el('calc').textContent = t.calc;
+        el('error').textContent = t.error;
+        el('note').textContent = t.note;
+        el('footer').textContent = t.footer;
+        el('langToggle').textContent = t.toggle;
+        if (lastBmi !== null && el('result').style.display !== 'none') {
+          el('bmiCategory').textContent = classify(lastBmi);
+        }
+        document.title = t.title;
       }
 
       function calculate() {
-        const h = parseFloat(heightEl.value);
-        const w = parseFloat(weightEl.value);
+        const h = parseFloat(el('height').value);
+        const w = parseFloat(el('weight').value);
         if (!isFinite(h) || !isFinite(w) || h <= 0 || w <= 0) {
-          errorEl.style.display = 'block';
-          resultEl.style.display = 'none';
+          el('error').style.display = 'block';
+          el('result').style.display = 'none';
           return;
         }
-        errorEl.style.display = 'none';
+        el('error').style.display = 'none';
         const hm = h / 100;
         const bmi = w / (hm * hm);
-        valueEl.textContent = bmi.toFixed(1);
-        labelEl.textContent = classify(bmi);
-        resultEl.style.display = 'block';
+        lastBmi = bmi;
+        el('bmiValue').textContent = bmi.toFixed(1);
+        el('bmiCategory').textContent = classify(bmi);
+        el('result').style.display = 'block';
       }
 
-      btn.addEventListener('click', calculate);
-      [heightEl, weightEl].forEach(el => {
-        el.addEventListener('keydown', (e) => {
+      el('calc').addEventListener('click', calculate);
+      [el('height'), el('weight')].forEach((input) => {
+        input.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') calculate();
         });
       });
+      el('langToggle').addEventListener('click', () => {
+        lang = lang === 'zh' ? 'en' : 'zh';
+        try { localStorage.setItem('bmi-lang', lang); } catch (e) {}
+        applyTranslations();
+      });
+
+      applyTranslations();
     })();
   </script>
 </body>
