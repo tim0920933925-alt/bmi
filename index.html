@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BMI 計算器</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #222;
+      --primary: #2b7bff;
+      --muted: #666;
+      --border: #e3e6eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+    h1 { margin: 0 0 6px; font-size: 1.6rem; }
+    p.desc { margin: 0 0 20px; color: var(--muted); font-size: 0.95rem; }
+    .field { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.95rem; }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus { border-color: var(--primary); }
+    .unit { color: var(--muted); font-size: 0.85rem; margin-left: 4px; }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.9; }
+    .result {
+      margin-top: 24px;
+      text-align: center;
+      display: none;
+    }
+    .bmi-value {
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .bmi-label { margin-top: 8px; font-size: 1.1rem; font-weight: 600; }
+    .bmi-note { margin-top: 6px; color: var(--muted); font-size: 0.9rem; }
+    .error { color: #d33; margin-top: 12px; text-align: center; font-size: 0.9rem; display: none; }
+    footer {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>BMI 計算器</h1>
+    <p class="desc">輸入身高與體重，計算身體質量指數 (BMI)。</p>
+
+    <div class="field">
+      <label for="height">身高 <span class="unit">(cm)</span></label>
+      <input id="height" type="number" min="1" step="0.1" placeholder="例如：170" />
+    </div>
+    <div class="field">
+      <label for="weight">體重 <span class="unit">(kg)</span></label>
+      <input id="weight" type="number" min="1" step="0.1" placeholder="例如：65" />
+    </div>
+
+    <button id="calc">計算 BMI</button>
+    <div class="error" id="error">請輸入有效的大於 0 的數值。</div>
+
+    <div class="result" id="result">
+      <div class="bmi-value" id="bmiValue">--</div>
+      <div class="bmi-label" id="bmiLabel">--</div>
+      <div class="bmi-note">成人 BMI 參考：過輕 &lt; 18.5、正常 18.5–24、過重 24–27、肥胖 ≥ 27</div>
+    </div>
+
+    <footer>BMI 小網頁 v1 · 中文版</footer>
+  </main>
+
+  <script>
+    (function () {
+      const heightEl = document.getElementById('height');
+      const weightEl = document.getElementById('weight');
+      const btn = document.getElementById('calc');
+      const errorEl = document.getElementById('error');
+      const resultEl = document.getElementById('result');
+      const valueEl = document.getElementById('bmiValue');
+      const labelEl = document.getElementById('bmiLabel');
+
+      function classify(bmi) {
+        if (bmi < 18.5) return '過輕';
+        if (bmi < 24) return '正常';
+        if (bmi < 27) return '過重';
+        return '肥胖';
+      }
+
+      function calculate() {
+        const h = parseFloat(heightEl.value);
+        const w = parseFloat(weightEl.value);
+        if (!isFinite(h) || !isFinite(w) || h <= 0 || w <= 0) {
+          errorEl.style.display = 'block';
+          resultEl.style.display = 'none';
+          return;
+        }
+        errorEl.style.display = 'none';
+        const hm = h / 100;
+        const bmi = w / (hm * hm);
+        valueEl.textContent = bmi.toFixed(1);
+        labelEl.textContent = classify(bmi);
+        resultEl.style.display = 'block';
+      }
+
+      btn.addEventListener('click', calculate);
+      [heightEl, weightEl].forEach(el => {
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') calculate();
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
